@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  email    String @unique
+  fullName String
+  password String
+
+  @@map("users")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+
+  @@map("categories")
+}
+
+model Provider {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+
+  @@map("providers")
+}
+
+model Product {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  description String
+  provider    Provider          @relation(fields: [providerId], references: [id])
+  providerId  Int
+  category    Category          @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  status      Status
+  picturePath String?
+  quantity    Int
+  deleted     Boolean           @default(false)
+  historic    HistoricProduct[]
+
+  @@map("products")
+}
+
+model HistoricProduct {
+  id          Int      @id @default(autoincrement())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   Int
+  quantityOld Int
+  quantityNew Int
+  updatedAt   DateTime @updatedAt
+
+  @@map("historicProducts")
+}
+
+enum Status {
+  AVAILABLE
+  UNAVAILABLE
+}
